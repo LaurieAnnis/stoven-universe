@@ -87,7 +87,7 @@ jobs:
             echo "📦 Processing: $basefile"
             
             # FIXED: Find all parts for this EXACT file path (not just basename)
-            parts=$(find . -type f -name "$(basename "$basefile").part*" -path "$(dirname "$basefile")/*" | sort -V)
+            parts=$(find . -type f -name "$(basename "$basefile").part*" | sort -V)
             part_count=$(echo "$parts" | wc -w)
             
             if [ $part_count -eq 0 ]; then
