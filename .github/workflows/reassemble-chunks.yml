@@ -245,7 +245,7 @@ jobs:
           else
             echo "📝 Committing changes..."
             
-            git commit -m "🔧 Reassemble Unity WebGL chunks
+          git commit -m "🔧 Reassemble Unity WebGL chunks - ${{ steps.check_chunks.outputs.chunk_count }} files processed"
 
 Automatically reassembled \$\{{ steps.check_chunks.outputs.chunk_count }} chunk files into complete Unity files.
 
