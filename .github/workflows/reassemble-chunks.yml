@@ -20,7 +20,8 @@ jobs:
   reassemble:
     name: Reassemble Unity WebGL Files
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -239,6 +240,8 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action - Chunk Reassembly"
           
+          # Force-add reassembled files to ensure they're staged
+          git add -f $(find . -type f \( -name "*.data" -o -name "*.wasm" \))
           git add .
           
           if git diff --staged --quiet; then
@@ -246,7 +249,8 @@ jobs:
           else
             echo "📝 Committing changes..."
             git commit -m "🔧 Reassemble Unity WebGL chunks - ${{ steps.check_chunks.outputs.chunk_count }} files processed"
-            echo "✅ Changes committed successfully"
+            git push origin HEAD
+            echo "✅ Changes committed and pushed successfully"
             echo "🚀 Repository now contains complete Unity WebGL files"
           fi
           
