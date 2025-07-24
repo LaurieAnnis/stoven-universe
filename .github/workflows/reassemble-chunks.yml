@@ -1,9 +1,8 @@
 # .github/workflows/reassemble-chunks.yml
-# Unity WebGL Large File Chunk Reassembly Workflow (FINAL CLEAN VERSION)
+# Unity WebGL Large File Chunk Reassembly Workflow with Direct GitHub Pages Deployment
 # 
-# FIXED: All bash syntax errors resolved
-# FIXED: Proper GitHub Actions template variables
-# FIXED: Support for both .data and .wasm files
+# FIXED: Deploys reassembled files directly to GitHub Pages instead of committing to Git
+# COMPATIBLE: Works with existing professional URL system
 
 name: Reassemble Unity Chunks
 
@@ -16,12 +15,21 @@ on:
         default: 'true'
         type: string
 
+# REQUIRED: Enhanced permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent concurrent deployments
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  reassemble:
-    name: Reassemble Unity WebGL Files
+  build:
+    name: Reassemble and Prepare for Deployment
     runs-on: ubuntu-latest
-    permissions:
-      contents: write 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,22 +63,6 @@ jobs:
             echo "chunks_found=false" >> $GITHUB_OUTPUT
           fi
           
-      - name: Protect against LFS
-        if: steps.check_chunks.outputs.chunks_found == 'true'
-        run: |
-          echo "🛡️ Adding LFS protection for chunk files..."
-          
-          if [ ! -f .gitattributes ]; then
-            touch .gitattributes
-          fi
-          
-          if ! grep -q "*.part*" .gitattributes; then
-            echo "*.part* filter=diff text" >> .gitattributes
-            echo "✅ Added LFS protection to .gitattributes"
-          else
-            echo "ℹ️ LFS protection already exists"
-          fi
-          
       - name: Reassemble chunk files
         if: steps.check_chunks.outputs.chunks_found == 'true'
         run: |
@@ -87,7 +79,7 @@ jobs:
             echo ""
             echo "📦 Processing: $basefile"
             
-            # FIXED: Find all parts for this EXACT file path (not just basename)
+            # Find all parts for this EXACT file path (not just basename)
             parts=$(find . -type f -name "$(basename "$basefile").part*" | sort -V)
             part_count=$(echo "$parts" | wc -w)
             
@@ -125,16 +117,6 @@ jobs:
             
             echo "📏 Total size of parts: $(echo $part_size | awk '{printf "%.2f MB", $1/1024/1024}')"
             
-            # Create backup directory in same location as original file
-            backup_dir="$(dirname "$basefile")/.chunks_backup"
-            mkdir -p "$backup_dir"
-            
-            # Backup chunks before reassembly
-            for part in $parts; do
-              cp "$part" "$backup_dir/"
-            done
-            echo "💾 Backed up chunks to $backup_dir"
-            
             # Reassemble with verification
             echo "🔧 Reassembling $basefile..."
             
@@ -164,13 +146,8 @@ jobs:
                 echo "🗑️ Removed chunk: $(basename "$part")"
               done
               
-              # Remove backup after successful reassembly
-              rm -rf "$backup_dir"
-              echo "🧹 Cleaned up backup directory"
-              
             else
               echo "❌ Size mismatch for $basefile (expected: $part_size, got: $reassembled_size)"
-              echo "⚠️ Keeping backup files for manual inspection"
               rm -f "$basefile.tmp"
             fi
           done
@@ -186,7 +163,7 @@ jobs:
           fi
           
       - name: Verify Unity WebGL structure
-        if: steps.check_chunks.outputs.chunks_found == 'true'
+        if: steps.check_chunks.outputs.chunks_found == 'true' || steps.check_chunks.outputs.chunks_found == 'false'
         run: |
           echo "🔍 Verifying Unity WebGL file structure..."
           
@@ -231,55 +208,37 @@ jobs:
           else
             echo "⚠️ Unity WebGL structure may be incomplete"
           fi
-          
-      - name: Commit reassembled files
-        if: steps.check_chunks.outputs.chunks_found == 'true'
-        run: |
-          echo "💾 Committing reassembled Unity files..."
-          
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action - Chunk Reassembly"
-          
-          # Force-add reassembled files to ensure they're staged
-          git add -f $(find . -type f \( -name "*.data" -o -name "*.wasm" \))
-          git add .
-          
-          if git diff --staged --quiet; then
-            echo "ℹ️ No changes to commit"
-          else
-            echo "📝 Committing changes..."
-            git commit -m "🔧 Reassemble Unity WebGL chunks - ${{ steps.check_chunks.outputs.chunk_count }} files processed"
-            git push origin HEAD
-            echo "✅ Changes committed and pushed successfully"
-            echo "🚀 Repository now contains complete Unity WebGL files"
-          fi
-          
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+  # NEW: Separate deploy job for GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        
       - name: Final status report
-        if: always()
         run: |
           echo ""
-          echo "📋 Final Status Report"
-          echo "===================="
-          
-          if [ "${{ steps.check_chunks.outputs.chunks_found }}" = "true" ]; then
-            echo "🎯 Operation: Chunk reassembly"
-            echo "📦 Chunks processed: ${{ steps.check_chunks.outputs.chunk_count }}"
-            
-            # Check for both types of remaining chunks
-            remaining_chunks=$(find . -type f \( -name "*.data.part*" -o -name "*.wasm.part*" \) | wc -l)
-            
-            if [ $remaining_chunks -eq 0 ]; then
-              echo "✅ SUCCESS: All chunks reassembled and removed"
-              echo "🎮 Unity WebGL build ready for deployment"
-            else
-              echo "⚠️ WARNING: $remaining_chunks chunk files still remain"
-              echo "📋 Check reassembly logs for errors"
-            fi
-          else
-            echo "✅ Operation: No chunks found"
-            echo "📄 Repository already contains complete files"
-          fi
-          
+          echo "📋 GitHub Pages Deployment Complete"
+          echo "================================="
+          echo "🌐 Site URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "📦 Deployment ID: ${{ steps.deployment.outputs.deployment_id }}"
           echo ""
-          echo "🌐 Professional URL will be available shortly at:"
+          echo "🎮 Unity WebGL build is now live!"
+          echo "🔗 Professional URL will be available at:"
           echo "https://$(echo ${{ github.repository }} | cut -d'/' -f1).unreality3d.com/$(echo ${{ github.repository }} | cut -d'/' -f2)/"
+          echo ""
+          echo "✅ Large files deployed successfully without Git storage"
