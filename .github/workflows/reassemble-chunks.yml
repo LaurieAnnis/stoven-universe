@@ -246,15 +246,6 @@ jobs:
             echo "📝 Committing changes..."
             
           git commit -m "🔧 Reassemble Unity WebGL chunks - ${{ steps.check_chunks.outputs.chunk_count }} files processed"
-
-Automatically reassembled \$\{{ steps.check_chunks.outputs.chunk_count }} chunk files into complete Unity files.
-
-Files processed:
-- Large Unity files split during deployment  
-- Chunks removed after successful reassembly
-- Unity WebGL structure verified and complete
-
-Deployed via Unreality3D platform chunking system."
             
             echo "✅ Changes committed successfully"
             echo "🚀 Repository now contains complete Unity WebGL files"
