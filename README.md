@@ -2,7 +2,7 @@
 
 **Unity 6 WebGL Experience by spacedolphin**
 
-🎮 **[Play Experience](https://spacedolphin.unreality3d.com/stoven-universe/)**
+🎮 **[Play Experience](https://unreality3d.com/spacedolphin/stoven-universe/)**
 
 ---
 
@@ -17,7 +17,7 @@ This is an interactive Unity 6 WebGL experience created using the [Unreality3D P
 
 ### Deployment Status
 - ✅ **Auto-deployed**: Push to main branch triggers deployment
-- ✅ **Professional URL**: Custom subdomain routing 
+- ✅ **Professional URL**: Path-based routing 
 - ✅ **PayPal Ready**: Monetization system active
 - ✅ **Performance Optimized**: Preconfigured for WebGL
 
@@ -34,15 +34,16 @@ This is an interactive Unity 6 WebGL experience created using the [Unreality3D P
 This experience was created using **[Unreality3D](https://unreality3d.com)** - The world's most creator-friendly 3D content platform.
 
 ### 🎯 Want to Create Your Own?
-- **Download template Unity project**: [Get U3D Template](https://unreality3d.com/download-template)
+- **Download template Unity project**: [Get U3D Template](https://unreality3d.com/template)
 - **Documentation**: [Platform Docs](https://unreality3d.com/docs)
-- **Creator Dashboard**: [Unity Menu > U3D](https://unreality3d.com/quickstart.html)
+- **Creator Dashboard**: [Online](https://unreality3d.com/creator-dashboard)
 
 ### 🔧 Platform Features
-- **Zero Setup**: Download template project, build, deploy
-- **Professional URLs**: Custom Unreality3D subdomains for every creator
+- **Zero Setup**: Download template project, customize, publish
+- **Professional URLs**: Path-based Unreality3D URLs for every Creator
 - **PayPal Transactions**: Platform-hosted PayPal transactions  
-- **Automatic Deployment**: Firebase Functions + Git operations to GitHub Pages
+- **Automated Deployment**: Firebase Functions + Git operations to GitHub Pages
+- **AAA Character Controller**: Customizable player and camera controls
 - **Performance**: Optimized for fast loading and smooth gameplay
 
 ---

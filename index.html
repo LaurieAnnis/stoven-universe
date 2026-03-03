@@ -3,9 +3,18 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity Web Player | spacedolphin's Unreality3D Experience</title>
+    <title>spacedolphin's Unreality3D Experience</title>
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no">
+
+    <!-- Unreality3D Favicon Implementation -->
+    <link rel="icon" type="image/x-icon" href="https://unreality3d.com/favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://unreality3d.com/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://unreality3d.com/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://unreality3d.com/images/unreality3d-logo.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://unreality3d.com/images/unreality3d-logo.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://unreality3d.com/images/unreality3d-logo.png">
+    <meta name="theme-color" content="#232323">
 
     <!-- Google Analytics 4 (GA4) Tracking -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4BFSLTHZF"></script>
@@ -72,15 +81,27 @@
         #unity-logo {
             inline-size: 154px;
             block-size: 130px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 154 130"><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="white" font-size="20">Unreality3D</text></svg>') no-repeat center;
-            background-size: contain;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: #06b6d4;
+            font-size: 24px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #unity-logo::after {
+            content: "Unreality3D";
         }
 
         #unity-progress-bar-empty {
             inline-size: 141px;
             block-size: 18px;
             margin-block: 10px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 141 18"><rect width="141" height="18" fill="none" stroke="%23ffffff" stroke-width="2"/></svg>') no-repeat center;
+            background: transparent;
+            border: 2px solid #ffffff;
             background-size: contain;
             position: relative;
             border-radius: 2px;
@@ -117,6 +138,85 @@
 
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ============================================ */
+        /* WebXR/VR Button Styles                       */
+        /* ============================================ */
+        
+        #webxr-button-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: none; /* Hidden by default, shown when VR is supported */
+        }
+
+        #enter-vr-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        #enter-vr-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        #enter-vr-button:active {
+            transform: translateY(0);
+        }
+
+        #enter-vr-button:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #enter-vr-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        #vr-status-message {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            z-index: 2000;
+            display: none;
+            max-width: 280px;
+        }
+
+        /* VR button pulse animation when VR is available */
+        @keyframes vr-pulse {
+            0%, 100% { box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(99, 102, 241, 0.7); }
+        }
+
+        #enter-vr-button.vr-available {
+            animation: vr-pulse 2s ease-in-out infinite;
+        }
+
+        /* Hide VR button during immersive session */
+        body.xr-session-active #webxr-button-container {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -132,23 +232,67 @@
         <div id="unity-warning"></div>
     </div>
 
+    <!-- WebXR/VR Enter Button -->
+    <div id="webxr-button-container">
+        <button id="enter-vr-button" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4l-2 2h-4l-2-2H4a2 2 0 0 1-2-2V8z"/>
+                <circle cx="8" cy="12" r="2"/>
+                <circle cx="16" cy="12" r="2"/>
+            </svg>
+            <span>Enter VR</span>
+        </button>
+    </div>
+    <div id="vr-status-message"></div>
+
     <script>
-        // Environment Detection
+        // UPDATED: Environment Detection with path-based URL support
         function detectEnvironment() {
             const hostname = window.location.hostname.toLowerCase();
             const pathname = window.location.pathname;
 
+            // NEW: Path-based URL detection for unreality3d.com/creator/project/
+            if (hostname === 'unreality3d.com') {
+                const pathParts = pathname.split('/').filter(p => p.length > 0);
+                
+                if (pathParts.length >= 2) {
+                    const creatorUsername = pathParts[0];
+                    const projectName = pathParts[1];
+                    
+                    console.log('Path-based Professional URL detected:', `${creatorUsername}/${projectName}`);
+                    
+                    gtag('event', 'creator_project_visit', {
+                        creator_name: creatorUsername,
+                        project_name: projectName,
+                        content_type: 'unity_webgl',
+                        platform_section: 'creator_content',
+                        url_format: 'path_based'
+                    });
+                    
+                    return {
+                        type: 'professional',
+                        isProduction: true,
+                        projectId: 'unreality3d',
+                        creatorUsername: creatorUsername,
+                        projectName: projectName,
+                        urlFormat: 'path_based'
+                    };
+                }
+            }
+
+            // EXISTING: Subdomain URL detection (for backward compatibility)
             if (hostname.endsWith('.unreality3d.com') && hostname !== 'unreality3d.com') {
                 const creatorUsername = hostname.replace('.unreality3d.com', '');
                 const projectName = pathname.split('/').filter(p => p.length > 0)[0] || 'main';
                 
-                console.log('Professional URL detected:', hostname);
+                console.log('Subdomain Professional URL detected:', hostname);
                 
                 gtag('event', 'creator_project_visit', {
                     creator_name: creatorUsername,
                     project_name: projectName,
                     content_type: 'unity_webgl',
-                    platform_section: 'creator_content'
+                    platform_section: 'creator_content',
+                    url_format: 'subdomain'
                 });
                 
                 return {
@@ -156,7 +300,8 @@
                     isProduction: true,
                     projectId: 'unreality3d',
                     creatorUsername: creatorUsername,
-                    projectName: projectName
+                    projectName: projectName,
+                    urlFormat: 'subdomain'
                 };
             }
 
@@ -195,7 +340,200 @@
         environment.creatorPayPalEmail = 'laurie@unreality3d.com';
         let unityInstance = null;
 
-        // PayPal integration placeholder - will be overridden by injected bridge
+        // ============================================
+        // WebXR/VR Session Management
+        // ============================================
+        
+        let xrSession = null;
+        let isVRSupported = false;
+        
+        // Check WebXR VR support
+        async function checkVRSupport() {
+            const vrButton = document.getElementById('enter-vr-button');
+            const vrContainer = document.getElementById('webxr-button-container');
+            const vrStatus = document.getElementById('vr-status-message');
+            
+            if (!navigator.xr) {
+                console.log('🥽 WebXR not available in this browser');
+                showVRStatus('WebXR not supported in this browser');
+                
+                gtag('event', 'webxr_check', {
+                    supported: false,
+                    reason: 'no_navigator_xr',
+                    creator_name: environment.creatorUsername || 'platform',
+                    project_name: environment.projectName || 'main'
+                });
+                return;
+            }
+            
+            try {
+                isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
+                
+                if (isVRSupported) {
+                    console.log('🥽 WebXR VR supported!');
+                    vrContainer.style.display = 'block';
+                    vrButton.disabled = false;
+                    vrButton.classList.add('vr-available');
+                    vrButton.querySelector('span').textContent = 'Enter VR';
+                    
+                    gtag('event', 'webxr_check', {
+                        supported: true,
+                        session_type: 'immersive-vr',
+                        creator_name: environment.creatorUsername || 'platform',
+                        project_name: environment.projectName || 'main'
+                    });
+                } else {
+                    console.log('🥽 WebXR VR not supported on this device');
+                    showVRStatus('VR not supported on this device');
+                    
+                    gtag('event', 'webxr_check', {
+                        supported: false,
+                        reason: 'device_not_supported',
+                        creator_name: environment.creatorUsername || 'platform',
+                        project_name: environment.projectName || 'main'
+                    });
+                }
+            } catch (error) {
+                console.error('🥽 Error checking VR support:', error);
+                showVRStatus('Error checking VR support');
+                
+                gtag('event', 'webxr_error', {
+                    error_type: 'support_check_failed',
+                    error_message: error.message,
+                    creator_name: environment.creatorUsername || 'platform',
+                    project_name: environment.projectName || 'main'
+                });
+            }
+        }
+        
+        function showVRStatus(message, duration = 5000) {
+            const vrStatus = document.getElementById('vr-status-message');
+            vrStatus.textContent = message;
+            vrStatus.style.display = 'block';
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    vrStatus.style.display = 'none';
+                }, duration);
+            }
+        }
+        
+        // Toggle VR session - uses Unity WebXR Export's API
+        function toggleVRSession() {
+            const vrButton = document.getElementById('enter-vr-button');
+
+            if (!unityInstance) {
+                console.error('🥽 Unity not loaded yet');
+                showVRStatus('Unity not loaded yet');
+                return;
+            }
+
+            try {
+                vrButton.disabled = true;
+                vrButton.querySelector('span').textContent = 'Starting VR...';
+
+                console.log('🥽 Calling Unity WebXR toggleVR...');
+
+                gtag('event', 'webxr_session_request', {
+                    creator_name: environment.creatorUsername || 'platform',
+                    project_name: environment.projectName || 'main'
+                });
+
+                // Call Unity WebXR Export's toggleVR function
+                // This is exposed by the WebXR Export package
+                if (unityInstance.Module && unityInstance.Module.WebXR && unityInstance.Module.WebXR.toggleVR) {
+                    unityInstance.Module.WebXR.toggleVR();
+                    console.log('🥽 WebXR toggleVR called');
+                } else {
+                    console.error('🥽 WebXR Export API not found on Unity instance');
+                    console.log('🥽 Available on Module:', Object.keys(unityInstance.Module || {}));
+                    showVRStatus('WebXR not available in Unity build');
+                    vrButton.disabled = false;
+                    vrButton.querySelector('span').textContent = 'Enter VR';
+                    return;
+                }
+
+                // The WebXR Export package handles session state
+                // We just need to update our button state based on callbacks
+                // For now, assume it worked - Unity will handle the actual session
+
+                vrButton.disabled = false;
+                vrButton.querySelector('span').textContent = 'Exit VR';
+                document.body.classList.add('xr-session-active');
+
+                gtag('event', 'webxr_session_start', {
+                    creator_name: environment.creatorUsername || 'platform',
+                    project_name: environment.projectName || 'main'
+                });
+
+            } catch (error) {
+                console.error('🥽 Failed to toggle VR session:', error);
+                vrButton.disabled = false;
+                vrButton.querySelector('span').textContent = 'Enter VR';
+                showVRStatus('Failed to start VR: ' + error.message);
+
+                gtag('event', 'webxr_session_error', {
+                    error_type: error.name,
+                    error_message: error.message,
+                    creator_name: environment.creatorUsername || 'platform',
+                    project_name: environment.projectName || 'main'
+                });
+            }
+        }
+
+        // Listen for Unity WebXR state changes to update button
+        document.addEventListener('onVRSupportedCheck', function(event) {
+            console.log('🥽 Unity VR support check:', event.detail);
+            const vrButton = document.getElementById('enter-vr-button');
+            const vrContainer = document.getElementById('webxr-button-container');
+
+            if (event.detail && event.detail.supported) {
+                isVRSupported = true;
+                vrContainer.style.display = 'block';
+                vrButton.disabled = false;
+                vrButton.classList.add('vr-available');
+            }
+        });
+
+        document.addEventListener('onXRSessionStarted', function(event) {
+            console.log('🥽 Unity XR session started');
+            xrSession = true; // Track state (not actual session object)
+            document.body.classList.add('xr-session-active');
+
+            const vrButton = document.getElementById('enter-vr-button');
+            vrButton.querySelector('span').textContent = 'Exit VR';
+            vrButton.classList.remove('vr-available');
+            vrButton.disabled = false;
+
+            gtag('event', 'webxr_session_start', {
+                creator_name: environment.creatorUsername || 'platform',
+                project_name: environment.projectName || 'main'
+            });
+        });
+
+        document.addEventListener('onXRSessionEnded', function(event) {
+            console.log('🥽 Unity XR session ended');
+            xrSession = null;
+            document.body.classList.remove('xr-session-active');
+
+            const vrButton = document.getElementById('enter-vr-button');
+            vrButton.querySelector('span').textContent = 'Enter VR';
+            vrButton.classList.add('vr-available');
+            vrButton.disabled = false;
+
+            gtag('event', 'webxr_session_end', {
+                creator_name: environment.creatorUsername || 'platform',
+                project_name: environment.projectName || 'main'
+            });
+        });
+
+        // Initialize VR button
+        document.getElementById('enter-vr-button').addEventListener('click', toggleVRSession);
+
+        // ============================================
+        // PayPal Integration (unchanged)
+        // ============================================
+
         console.log('💳 PayPal integration will be loaded from platform domain');
         
         // Check for PayPal bridge availability
@@ -319,7 +657,10 @@
             });
         };
 
+        // ============================================
         // Unity WebGL Loading
+        // ============================================
+        
         function loadUnity() {
             gtag('event', 'unity_load_start', {
                 creator_name: environment.creatorUsername || 'platform',
@@ -333,9 +674,13 @@
             var progressBarFull = document.querySelector("#unity-progress-bar-full");
             var warningBanner = document.querySelector("#unity-warning");
 
+            // Ensure loading bar is visible during loading
+            loadingBar.style.display = "flex";  // Show loading bar initially
+            canvas.style.display = "none";      // Hide canvas until loaded
+
             function unityShowBanner(msg, type) {
                 console.log('Unity Banner:', msg, type);
-                
+        
                 if (type === 'error') {
                     gtag('event', 'unity_load_error', {
                         error_message: msg,
@@ -343,7 +688,7 @@
                         project_name: environment.projectName || 'main'
                     });
                 }
-                
+        
                 function updateBannerVisibility() {
                     warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
                 }
@@ -362,11 +707,11 @@
             }
 
             var buildUrl = "Build";
-            var loaderUrl = buildUrl + "/e527055efa8c3325eaebcc30b9a1089c.loader.js?v=1756522906693";
+            var loaderUrl = buildUrl + "/4f42e788cce335e00a5e112bbc1926db.loader.js?v=1772567960651";
             var config = {
-                dataUrl: buildUrl + "/4c4af29dd745f4dac8e48322b6b9b479.data?v=1756522906693",
-                frameworkUrl: buildUrl + "/e9436d144bdb5c5ce4d3d259f8d27bee.framework.js?v=1756522906693",
-                codeUrl: buildUrl + "/9abfedcef0e1402e22260fc7c93fadc9.wasm?v=1756522906693",
+                dataUrl: buildUrl + "/0a8f28083ef696841ce9a9d510cac773.data?v=1772567960651",
+                frameworkUrl: buildUrl + "/7bc43e69a997608bd5f5d37df059be4f.framework.js?v=1772567960651",
+                codeUrl: buildUrl + "/90e493158140a33c89d67029b2be1dd2.wasm?v=1772567960651",
                 streamingAssetsUrl: "StreamingAssets",
                 companyName: "spacedolphin",
                 productName: "spacedolphin's Unreality3D Experience",
@@ -388,7 +733,7 @@
                 container.className = "unity-mobile";
                 config.devicePixelRatio = 1;
                 unityShowBanner('WebGL builds are not supported on mobile devices.');
-                
+        
                 gtag('event', 'mobile_access_attempt', {
                     device_type: 'mobile',
                     creator_name: environment.creatorUsername || 'platform',
@@ -399,14 +744,14 @@
                 canvas.style.height = "100vh";
             }
 
-            loadingBar.style.display = "none";
-
             var script = document.createElement("script");
             script.src = loaderUrl;
             script.onload = () => {
                 createUnityInstance(canvas, config, (progress) => {
+                    // Update progress bar during loading
                     progressBarFull.style.width = 100 * progress + "%";
-                    
+                    console.log('🔄 Unity loading progress: ' + Math.round(progress * 100) + '%');
+            
                     if (progress === 0.5) {
                         gtag('event', 'unity_load_50_percent', {
                             creator_name: environment.creatorUsername || 'platform',
@@ -415,16 +760,27 @@
                     }
                 }).then((instance) => {
                     unityInstance = instance;
+            
+                    // Only hide loading bar AFTER Unity loads completely
                     loadingBar.style.display = "none";
+                    canvas.style.display = "block";  // Show canvas when ready
+            
                     console.log('🎮 Unity loaded - PayPal bridge integration ready');
                     
+                    // Check VR support after Unity loads
+                    checkVRSupport();
+            
                     gtag('event', 'unity_load_complete', {
                         creator_name: environment.creatorUsername || 'platform',
                         project_name: environment.projectName || 'main',
                         load_time_ms: Date.now() - performance.timing.navigationStart
                     });
-                    
+            
                 }).catch((message) => {
+                    // Hide loading bar on error too
+                    loadingBar.style.display = "none";
+                    canvas.style.display = "block";
+            
                     gtag('event', 'unity_load_failed', {
                         error_message: message,
                         creator_name: environment.creatorUsername || 'platform',
@@ -433,15 +789,19 @@
                     alert(message);
                 });
             };
-            
+    
             script.onerror = () => {
+                // Handle script load failure
+                loadingBar.style.display = "none";
+                canvas.style.display = "block";
+        
                 gtag('event', 'unity_script_load_failed', {
                     script_url: loaderUrl,
                     creator_name: environment.creatorUsername || 'platform',
                     project_name: environment.projectName || 'main'
                 });
             };
-            
+    
             document.body.appendChild(script);
         }
 
@@ -497,6 +857,21 @@
             
             return gameObjectName;
         };
+        
+        // Debug helper for WebXR
+        window.debugWebXRStatus = function() {
+            console.log('🥽 WebXR Debug Info:');
+            console.log('   - navigator.xr available:', !!navigator.xr);
+            console.log('   - VR supported:', isVRSupported);
+            console.log('   - Active session:', !!xrSession);
+            console.log('   - Unity instance:', !!unityInstance);
+            return { 
+                xrAvailable: !!navigator.xr, 
+                vrSupported: isVRSupported, 
+                activeSession: !!xrSession,
+                unityLoaded: !!unityInstance
+            };
+        };
 
         // Page engagement tracking
         let pageStartTime = Date.now();
@@ -545,12 +920,13 @@
         console.log('💳 PayPal processing: Platform domain injection');
         console.log('🌐 Professional URL support enabled');
         console.log('📊 GA4 Analytics tracking enabled');
+        console.log('🥽 WebXR/VR support enabled');
         
         gtag('event', 'template_initialized', {
-            template_version: 'platform_domain_paypal_v2025',
+            template_version: 'platform_domain_paypal_webxr_v2025',
             creator_name: environment.creatorUsername || 'platform',
             project_name: environment.projectName || 'main',
-            features: ['platform_domain_paypal', 'dual_transactions', 'pwa', 'ga4_tracking', 'load_balancer_injection']
+            features: ['platform_domain_paypal', 'dual_transactions', 'pwa', 'ga4_tracking', 'load_balancer_injection', 'webxr_vr']
         });
     </script>
 </body>
