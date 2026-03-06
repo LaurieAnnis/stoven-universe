@@ -371,7 +371,7 @@
         window.UnityGetDeploymentInfo = function() {
             const hostname = window.location.hostname;
             const pathname = window.location.pathname;
-            const parts = pathname.replace(/^//, '').split('/');
+            const parts = pathname.split('/').filter(p => p.length > 0);
             const creatorUsername = parts[0] || '';
             const projectName = parts[1] || '';
             const isProfessionalURL = hostname.includes('unreality3d.com') && creatorUsername !== '';
@@ -758,11 +758,11 @@
             }
 
             var buildUrl = "Build";
-            var loaderUrl = buildUrl + "/2c6cf1804b16c7a704743ca71425099d.loader.js?v=1772762839391";
+            var loaderUrl = buildUrl + "/2c6cf1804b16c7a704743ca71425099d.loader.js?v=1772765590735";
             var config = {
-                dataUrl: buildUrl + "/508e9ab17305b2187d926994664cc073.data?v=1772762839391",
-                frameworkUrl: buildUrl + "/7bc43e69a997608bd5f5d37df059be4f.framework.js?v=1772762839391",
-                codeUrl: buildUrl + "/f51a318776e486dde328a5a93c41a13d.wasm?v=1772762839391",
+                dataUrl: buildUrl + "/84a14d8465bd3d81b335b4e163c9755c.data?v=1772765590735",
+                frameworkUrl: buildUrl + "/7bc43e69a997608bd5f5d37df059be4f.framework.js?v=1772765590735",
+                codeUrl: buildUrl + "/662fb1ed6723415b4089b6ff1c3c74b8.wasm?v=1772765590735",
                 streamingAssetsUrl: "StreamingAssets",
                 companyName: "spacedolphin",
                 productName: "spacedolphin's Unreality3D Experience",
