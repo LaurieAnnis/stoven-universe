@@ -10,8 +10,8 @@
     "minimal-ui"
   ],
   "orientation": "landscape-primary",
-  "theme_color": "#232323",
-  "background_color": "#232323",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
   "icons": [
     {
       "src": "https://unreality3d.com/images/unreality3d-logo.png",
