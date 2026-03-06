@@ -341,6 +341,57 @@
         let unityInstance = null;
 
         // ============================================
+        // Unity WebGL Bridge Functions
+        // Called by FirebaseIntegration.cs via [DllImport("__Internal")]
+        // ============================================
+
+        window.UnityGetPhotonToken = function(roomName, contentId) {
+            const tokenData = JSON.stringify({
+                appId: "a3df46ef-b10a-4954-8526-7a9fdd553543",
+                region: "auto",
+                maxPlayers: 10,
+                userId: "",
+                username: ""
+            });
+            if (unityInstance) {
+                unityInstance.SendMessage('U3D_FirebaseIntegration', 'OnPhotonTokenReceived', tokenData);
+            } else {
+                window._pendingPhotonRoom = roomName;
+                window._pendingPhotonContent = contentId;
+                window._pendingPhotonToken = tokenData;
+            }
+        };
+
+        window.UnityCheckContentAccess = function(contentId) {
+            if (unityInstance) {
+                unityInstance.SendMessage('U3D_FirebaseIntegration', 'OnAccessCheckComplete', 'true');
+            }
+        };
+
+        window.UnityGetDeploymentInfo = function() {
+            const hostname = window.location.hostname;
+            const pathname = window.location.pathname;
+            const parts = pathname.replace(/^//, '').split('/');
+            const creatorUsername = parts[0] || '';
+            const projectName = parts[1] || '';
+            const isProfessionalURL = hostname.includes('unreality3d.com') && creatorUsername !== '';
+            return JSON.stringify({
+                url: window.location.href,
+                hostname: hostname,
+                pathname: pathname,
+                isProduction: hostname.includes('unreality3d.com'),
+                isProfessionalURL: isProfessionalURL,
+                creatorUsername: creatorUsername,
+                projectName: projectName,
+                deploymentType: isProfessionalURL ? 'professional' : 'standard'
+            });
+        };
+
+        window.UnityReportDeploymentMetrics = function(deploymentType, loadTime) {
+            // Metrics received -- no action needed in browser
+        };
+
+        // ============================================
         // WebXR/VR Session Management
         // ============================================
         
@@ -707,11 +758,11 @@
             }
 
             var buildUrl = "Build";
-            var loaderUrl = buildUrl + "/0a9579ff96d2f32ee3f8448ecda1d259.loader.js?v=1772675664053";
+            var loaderUrl = buildUrl + "/2c6cf1804b16c7a704743ca71425099d.loader.js?v=1772762839391";
             var config = {
-                dataUrl: buildUrl + "/90ebe6eea7abe26cbad44b783409cb5a.data?v=1772675664053",
-                frameworkUrl: buildUrl + "/7bc43e69a997608bd5f5d37df059be4f.framework.js?v=1772675664053",
-                codeUrl: buildUrl + "/eb3dee0f473eed24c363f19d29ff3477.wasm?v=1772675664053",
+                dataUrl: buildUrl + "/508e9ab17305b2187d926994664cc073.data?v=1772762839391",
+                frameworkUrl: buildUrl + "/7bc43e69a997608bd5f5d37df059be4f.framework.js?v=1772762839391",
+                codeUrl: buildUrl + "/f51a318776e486dde328a5a93c41a13d.wasm?v=1772762839391",
                 streamingAssetsUrl: "StreamingAssets",
                 companyName: "spacedolphin",
                 productName: "spacedolphin's Unreality3D Experience",
@@ -760,13 +811,23 @@
                     }
                 }).then((instance) => {
                     unityInstance = instance;
-            
+
                     // Only hide loading bar AFTER Unity loads completely
                     loadingBar.style.display = "none";
                     canvas.style.display = "block";  // Show canvas when ready
-            
+
                     console.log('🎮 Unity loaded - PayPal bridge integration ready');
-                    
+
+                    // Deliver any Photon token request that fired before Unity was ready.
+                    // FirebaseIntegration.Start() calls UnityGetPhotonToken during Unity init,
+                    // before createUnityInstance resolves, so SendMessage would fail without this.
+                    if (window._pendingPhotonToken) {
+                        unityInstance.SendMessage('U3D_FirebaseIntegration', 'OnPhotonTokenReceived', window._pendingPhotonToken);
+                        window._pendingPhotonRoom = null;
+                        window._pendingPhotonContent = null;
+                        window._pendingPhotonToken = null;
+                    }
+
                     // Check VR support after Unity loads
                     checkVRSupport();
             
