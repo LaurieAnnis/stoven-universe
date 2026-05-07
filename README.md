@@ -1,6 +1,6 @@
-# Spacedolphin's Stoven Universe
+# Stoven Universe
 
-**Unity 6 WebGL Experience by spacedolphin**
+**Unity 6 WebGL Experience by Spacedolphin**
 
 🎮 **[Play Experience](https://unreality3d.com/spacedolphin/stoven-universe/)**
 
@@ -8,7 +8,7 @@
 
 Created using the [Unreality3D Platform](https://unreality3d.com).
 
-- **Creator**: spacedolphin
+- **Creator**: Spacedolphin
 - **Built with**: Unity 6+ WebGL
 
 ### Updating Content
